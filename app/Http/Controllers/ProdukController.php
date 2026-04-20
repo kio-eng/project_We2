@@ -19,14 +19,27 @@ class ProdukController extends Controller
     /**
      * Tampilkan Data (Read)
      */
-    public function index()
+    public function index(Request $request)
     {
         $products = Produk::all();
-        return response()->json([
-            'success' => true,
-            'message' => 'Daftar produk berhasil diambil',
-            'data' => $products
-        ], 200);
+        
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Daftar produk berhasil diambil',
+                'data' => $products
+            ], 200);
+        }
+
+        return view('produk.index', compact('products'));
+    }
+
+    /**
+     * Tampilkan Form Tambah (Web)
+     */
+    public function create()
+    {
+        return view('produk.create');
     }
 
     /**
@@ -54,18 +67,35 @@ class ProdukController extends Controller
         try {
             $product = $this->produkService->storeProduk($request->all());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Produk berhasil ditambahkan',
-                'data' => $product
-            ], 201);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Produk berhasil ditambahkan',
+                    'data' => $product
+                ], 201);
+            }
+
+            return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data',
-                'error' => $e->getMessage()
-            ], 500);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat menyimpan data',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()])->withInput();
         }
+    }
+
+    /**
+     * Tampilkan Form Edit (Web)
+     */
+    public function edit($id)
+    {
+        $product = Produk::findOrFail($id);
+        return view('produk.edit', compact('product'));
     }
 
     /**
@@ -84,11 +114,15 @@ class ProdukController extends Controller
 
         $product->update($request->all());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Produk berhasil diperbarui',
-            'data' => $product
-        ], 200);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil diperbarui',
+                'data' => $product
+            ], 200);
+        }
+
+        return redirect()->route('produk.index')->with('success', 'Produk berhasil diperbarui');
     }
 
     /**
@@ -107,9 +141,13 @@ class ProdukController extends Controller
 
         $product->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Produk berhasil dihapus'
-        ], 200);
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil dihapus'
+            ], 200);
+        }
+
+        return redirect()->route('produk.index')->with('success', 'Produk berhasil dihapus');
     }
 }

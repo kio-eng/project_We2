@@ -207,8 +207,15 @@
 <body>
     <nav>
         <h1>💎 Project We2 - Inventory</h1>
-        <div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
             <a href="{{ route('produk.index') }}" class="btn btn-secondary">Dashboard</a>
+            @auth
+                <span style="font-size: 0.875rem; font-weight: 500;">Role: {{ ucfirst(Auth::user()->role) }}</span>
+                <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                    @csrf
+                    <button type="submit" class="btn btn-danger" style="padding: 0.5rem 1rem;">Logout</button>
+                </form>
+            @endauth
         </div>
     </nav>
 
